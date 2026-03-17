@@ -1,133 +1,159 @@
-# 🏏 IPL Score Prediction
+# Rock–Paper–Scissors–Plus AI Referee Bot
 
-A Machine Learning project that predicts the final score of an IPL innings using live match statistics such as batting team, bowling team, current score, overs, wickets, and recent performance.
+## Overview
 
-This project demonstrates end-to-end ML workflow including data preprocessing, feature engineering, model building, evaluation, and deployment using Streamlit.
+This project implements a minimal **AI Game Referee** for a Rock–Paper–Scissors–Plus game. The bot runs a short, best-of-3 conversational game between a user and the system, enforcing rules, tracking state, and responding intelligently to user input.
 
----
-
-## 📌 Project Overview
-
-The Indian Premier League (IPL) is one of the most competitive T20 cricket leagues in the world. Predicting the final innings score helps in:
-
-- 📊 Match analytics
-- 📈 Strategy building
-- 🤖 Cricket data applications
-- 🏏 Fantasy sports analysis
-
-This model uses historical IPL match data to predict the final score at the end of 20 overs.
+The solution is designed to evaluate **logical reasoning, agent design, state modeling, and tool-based architecture**, aligned with the expectations of an AI Product Engineer (Conversational Agents) role.
 
 ---
 
-## 🚀 Features
+## Game Rules
 
-- Data Cleaning & Preprocessing  
-- Feature Engineering  
-- Machine Learning Model Training  
-- Model Evaluation (MAE / RMSE)  
-- Interactive Streamlit Web Application  
-- Real-time Score Prediction  
+* The game is **best of 3 rounds**
+* Valid moves:
 
----
-
-## 🛠️ Tech Stack
-
-- Python  
-- Pandas  
-- NumPy  
-- Scikit-learn  
-- Matplotlib / Seaborn  
-- Streamlit  
-
----
-IPL-score-prediction/
-│
-├── app.py # Streamlit application
-├── model.pkl # Trained ML model
-├── data.csv # IPL dataset
-├── notebook.ipynb # Model training notebook
-├── requirements.txt # Dependencies
-└── README.md
+  * rock
+  * paper
+  * scissors
+  * bomb (can be used **once per player per game**)
+* Bomb beats all other moves
+* Bomb vs bomb results in a draw
+* Invalid input **wastes the round**
+* The game ends automatically after 3 rounds
 
 ---
 
-## 📊 Input Features
+## Architecture Overview
 
-The model takes the following inputs:
+The system follows a clean **agent–tool–state separation**, inspired by Google ADK design principles.
 
-- Batting Team  
-- Bowling Team  
-- Current Runs  
-- Wickets Fallen  
-- Overs Completed  
-- Runs in Last 5 Overs  
-- Wickets in Last 5 Overs  
+### 1. State Model
 
----
+Game state is stored explicitly in a Python data structure and persists across turns.
 
-## 🧠 Machine Learning Model
+Tracked state includes:
 
-The project uses:
+* Current round number
+* User score
+* Bot score
+* Bomb usage for user and bot
+* Round history
 
-- Linear Regression / Random Forest (update according to your actual model)
-- Trained on historical IPL data
-- Evaluated using:
-  - Mean Absolute Error (MAE)
-  - Root Mean Squared Error (RMSE)
+State is maintained **in memory only** and never reconstructed from prompt text.
 
 ---
 
-## 📈 Project Workflow
+### 2. Tool Layer (Deterministic Logic)
 
-1. Data Collection  
-2. Data Cleaning  
-3. Feature Engineering  
-4. Train-Test Split  
-5. Model Training  
-6. Model Evaluation  
-7. Deployment using Streamlit  
+All game rules and validations are enforced via explicit tools:
+
+* `validate_move` – Validates user input and bomb usage
+* `resolve_round` – Determines bot move and round winner
+* `update_game_state` – Mutates game state after each round
+
+These tools return structured outputs and ensure deterministic behavior, preventing invalid states such as bomb reuse or extra rounds.
 
 ---
 
-## ▶️ How to Run the Project
+### 3. Agent Layer
 
-### 1️⃣ Clone the Repository
+The agent is responsible for:
 
-``
-git clone https://github.com/Somesh1810/IPL-score-prediction.git
-cd IPL-score-prediction``
+* Interpreting user intent
+* Calling tools for validation and state mutation
+* Generating user-facing responses
 
-## 📂 Project Structure
-### Install Dependencies
-pip install -r requirements.txt
+No game logic is embedded in prompts or response text.
 
-### Run the Application
+---
+
+## Interaction Modes
+
+### CLI Mode (Primary)
+
+The core implementation runs as a **simple conversational loop**, fully satisfying the assignment constraints.
+
+Run:
+
+```bash
+python main.py
+```
+
+---
+
+### Optional Streamlit UI
+
+A lightweight Streamlit interface is included **only as a presentation layer**. It does not affect game logic, state handling, or tool usage.
+
+Run:
+
+```bash
 streamlit run app.py
+```
 
-## Live Demo
+The CLI version remains the authoritative implementation.
 
-If deployed on Streamlit Cloud, add your live link here:
+---
+**The core implementation runs as a CLI-based conversational loop; the Streamlit UI is optional and not required for compliance.**
 
-👉 https://your-app-link.streamlit.app
+---
+## Constraints Compliance
 
-## Sample Prediction Output
-Predicted Final Score: 178 - 185
+This solution strictly follows the assignment constraints:
 
-## Future Improvements
+* No databases
+* No external APIs
+* No long-running backend servers
+* No prompt-only state
 
-Add Deep Learning models
+All state is maintained in-memory, and all logic is local and deterministic.
 
-Add Win Probability Prediction
+---
 
-Improve Feature Engineering
+## Design Tradeoffs
 
-Deploy using Docker
+* A simple random strategy is used for the bot to keep focus on correctness
+* CLI interaction is prioritized over UI polish
+* Single-agent design is used due to limited problem scope
 
-Add Data Visualization Dashboard
+---
 
-## Author
+## Possible Improvements
 
-Somesh M
-Statistics & Data Science
+With more time, the following could be added:
 
-GitHub: https://github.com/Somesh1810
+* Smarter bot strategy
+* Structured JSON responses for all turns
+* Replay or extended match support
+* Unit tests for tools and state transitions
+
+---
+
+## How to Run
+
+### Setup
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\\Scripts\\activate
+pip install -r requirements.txt
+```
+
+### Run CLI
+
+```bash
+python main.py
+```
+
+### Run UI (Optional)
+
+```bash
+streamlit run app.py
+```
+
+---
+
+## Summary
+
+This project prioritizes **correctness, clarity, and safe state handling** over UI polish. The design cleanly separates intent understanding, game logic, and response generation, making it suitable for conversational agent systems and easily adaptable to Google ADK environments.
